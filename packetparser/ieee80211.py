@@ -34,6 +34,13 @@ class IEEE80211Types:
     DATA = 0x08
 
 
+ieee80211_type_to_str = {
+    IEEE80211Types.MANAGEMENT: 'Management',
+    IEEE80211Types.CONTROL: 'Control',
+    IEEE80211Types.DATA: 'Data',
+}
+
+
 class IEEE80211ManagementSubtypes:
     # for TYPE_MGT
     ASSOC_REQ=0x00
@@ -51,6 +58,23 @@ class IEEE80211ManagementSubtypes:
     ACTION_NOACK=0xe0	#/* 11n */
 
 
+ieee80211_management_subtype_to_str = {
+    IEEE80211ManagementSubtypes.ASSOC_REQ: '',
+    IEEE80211ManagementSubtypes.ASSOC_RESP: '',
+    IEEE80211ManagementSubtypes.REASSOC_REQ: '',
+    IEEE80211ManagementSubtypes.REASSOC_RESP: '',
+    IEEE80211ManagementSubtypes.PROBE_REQ: 'Probe request',
+    IEEE80211ManagementSubtypes.PROBE_RESP: 'Probe response',
+    IEEE80211ManagementSubtypes.BEACON: 'Beacon',
+    IEEE80211ManagementSubtypes.ATIM: '',
+    IEEE80211ManagementSubtypes.DISASSOC: '',
+    IEEE80211ManagementSubtypes.AUTH: '',
+    IEEE80211ManagementSubtypes.DEAUTH: '',
+    IEEE80211ManagementSubtypes.ACTION: '',
+    IEEE80211ManagementSubtypes.ACTION_NOACK: '',
+}
+
+
 class IEEE80211ControlSubtypes:
     # for TYPE_CTL
     WRAPPER=0x70	#/* 11n */
@@ -62,6 +86,18 @@ class IEEE80211ControlSubtypes:
     ACK=0xd0
     CF_END=0xe0
     CF_END_ACK=0xf0
+
+ieee80211_control_subtype_to_str = {
+    IEEE80211ControlSubtypes.WRAPPER: '',
+    IEEE80211ControlSubtypes.BAR: '',
+    IEEE80211ControlSubtypes.BA: '',
+    IEEE80211ControlSubtypes.PS_POLL: '',
+    IEEE80211ControlSubtypes.RTS: '',
+    IEEE80211ControlSubtypes.CTS: '',
+    IEEE80211ControlSubtypes.ACK: '',
+    IEEE80211ControlSubtypes.CF_END: '',
+    IEEE80211ControlSubtypes.CF_END_ACK: '',
+}
 
 
 class IEEE80211DataSubtypes:
@@ -75,6 +111,25 @@ class IEEE80211DataSubtypes:
     CFPOLL=0x60
     CF_ACK_CF_ACK=0x70
     QOS=0x80
+
+ieee80211_data_subtype_to_str = {
+    IEEE80211DataSubtypes.DATA: '',
+    IEEE80211DataSubtypes.CF_ACK: '',
+    IEEE80211DataSubtypes.CF_POLL: '',
+    IEEE80211DataSubtypes.CF_ACPL: '',
+    IEEE80211DataSubtypes.NODATA: '',
+    IEEE80211DataSubtypes.CFACK: '',
+    IEEE80211DataSubtypes.CFPOLL: '',
+    IEEE80211DataSubtypes.CF_ACK_CF_ACK: '',
+    IEEE80211DataSubtypes.QOS: '',
+}
+
+
+ieee80211_subtype_to_str = {
+    IEEE80211Types.MANAGEMENT: ieee80211_management_subtype_to_str,
+    IEEE80211Types.CONTROL: ieee80211_control_subtype_to_str,
+    IEEE80211Types.DATA: ieee80211_data_subtype_to_str,
+}
 
 
 class IEEE80211FrameStructure(Structure):
