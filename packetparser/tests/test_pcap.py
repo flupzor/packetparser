@@ -311,7 +311,11 @@ class ApiTests(IEEE80211Tests, RadiotapMixin, PcapMixin, unittest.TestCase):
             pcap_header = PcapFile.parse_header(f)
             self._assert_pcap_header(pcap_header)
 
-            pcap_frame = pcap_header.parse_frame()
+            pcap_frames = list(pcap_header.frames())
+
+            self.assertEqual(len(pcap_frames), 1)
+            pcap_frame = pcap_frames[0]
+
             self._assert_pcap_frame(
                 pcap_frame,
                 length=75,
@@ -333,7 +337,10 @@ class ApiTests(IEEE80211Tests, RadiotapMixin, PcapMixin, unittest.TestCase):
             pcap_header = PcapFile.parse_header(f)
             self._assert_pcap_header(pcap_header)
 
-            pcap_frame = pcap_header.parse_frame()
+            pcap_frames = list(pcap_header.frames())
+
+            self.assertEqual(len(pcap_frames), 1)
+            pcap_frame = pcap_frames[0]
             self._assert_pcap_frame(
                 pcap_frame,
                 length=57,
@@ -345,3 +352,32 @@ class ApiTests(IEEE80211Tests, RadiotapMixin, PcapMixin, unittest.TestCase):
 
             ieee80211_frame = radiotap_frame.ieee80211_frame
             self._assert_ieee80211_probe_request_frame(ieee80211_frame)
+
+    def test_pcap_parse_multiple_frames(self):
+        with TemporaryFile() as f:
+            pcap_file_array = self._create_pcap_header()
+
+            # Create 100 frames.
+            for i in range(100):
+                pcap_file_array += self._create_pcap_frame(
+                   incl_len=[0x39, 0x00, 0x00, 0x00]  # 57 bytes
+                ) + \
+                self._create_radiotap_frame() + \
+                self._create_ieee80211_probe_request_frame()
+
+            pcap_file_array.tofile(f)
+
+            f.seek(0)
+
+            pcap_header = PcapFile.parse_header(f)
+            self._assert_pcap_header(pcap_header)
+
+            for pcap_frame in pcap_header.frames():
+                self._assert_pcap_frame(
+                    pcap_frame,
+                    length=57,
+                    orig_length=57
+                )
+
+            pcap_frames = list(pcap_header.frames())
+            self.assertEqual(len(pcap_frames), 100)

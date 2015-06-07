@@ -303,13 +303,23 @@ class PcapFile(PacketContainer):
 
         return cls(data, file_handle)
 
-    def parse_frame(self):
+    def frames(self):
+        # Start parsing right after the PCAP header.
+        self.file_handle.seek(PcapHeaderStructure.struct.size)
+
         # TODO: For now we support 127, 80211 RadioTap only.
         extra = {
             'payload_type': RadiotapFrame,
         }
 
-        return PcapFrame.parse(
-            self.file_handle,
-            extra
-        )
+        try_next_frame = True
+
+        while try_next_frame:
+            try:
+                yield PcapFrame.parse(
+                    self.file_handle,
+                    extra
+                )
+            except EOFError:
+                try_next_frame = False
+
