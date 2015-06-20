@@ -30,3 +30,13 @@ def dump_array(a, name = None):
 
 def field_is_set(data, mask):
     return data & mask == mask
+
+def macaddr_to_str(addr):
+    return "{0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}".format(
+        addr[0],
+        addr[1],
+        addr[2],
+        addr[3],
+        addr[4],
+        addr[5],
+    )

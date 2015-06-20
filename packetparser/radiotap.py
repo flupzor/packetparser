@@ -18,7 +18,7 @@ from datetime import timedelta
 
 from .base import PacketContainer
 from .types import UInt32, UInt16, Int8, UInt8, Int32, UInt64, Structure
-from .ieee80211 import IEEE80211Frame
+from .ieee80211 import parse_ieee80211_frame
 from .utils import field_is_set
 
 class RadioTapTSFT(Structure):
@@ -384,7 +384,7 @@ class RadiotapFrame(PacketContainer):
             'upper_layer': frame,
         }
 
-        payload = IEEE80211Frame.parse(ieee80211_array, extra)
+        payload = parse_ieee80211_frame(ieee80211_array, extra)
 
         # Attach the payload to the frame.
         frame.ieee80211_frame = payload

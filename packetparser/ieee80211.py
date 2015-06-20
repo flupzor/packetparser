@@ -27,170 +27,20 @@ from .ieee80211_elements import (
     IEEE80211TIM
 )
 
+from .ieee80211_types import (
+    IEEE80211Types, ieee80211_type_to_str, IEEE80211ManagementSubtypes,
+    ieee80211_management_subtype_to_str, IEEE80211ControlSubtypes,
+    ieee80211_control_subtype_to_str, IEEE80211DataSubtypes,
+    ieee80211_data_subtype_to_str, ieee80211_subtype_to_str
+)
 
-class IEEE80211Types:
-    MANAGEMENT = 0x00
-    CONTROL = 0x04
-    DATA = 0x08
-
-
-ieee80211_type_to_str = {
-    IEEE80211Types.MANAGEMENT: 'Management',
-    IEEE80211Types.CONTROL: 'Control',
-    IEEE80211Types.DATA: 'Data',
-}
-
-
-class IEEE80211ManagementSubtypes:
-    # for TYPE_MGT
-    ASSOC_REQ=0x00
-    ASSOC_RESP=0x10
-    REASSOC_REQ=0x20
-    REASSOC_RESP=0x30
-    PROBE_REQ=0x40
-    PROBE_RESP=0x50
-    BEACON=0x80
-    ATIM=0x90
-    DISASSOC=0xa0
-    AUTH=0xb0
-    DEAUTH=0xc0
-    ACTION=0xd0
-    ACTION_NOACK=0xe0	#/* 11n */
-
-
-ieee80211_management_subtype_to_str = {
-    IEEE80211ManagementSubtypes.ASSOC_REQ: '',
-    IEEE80211ManagementSubtypes.ASSOC_RESP: '',
-    IEEE80211ManagementSubtypes.REASSOC_REQ: '',
-    IEEE80211ManagementSubtypes.REASSOC_RESP: '',
-    IEEE80211ManagementSubtypes.PROBE_REQ: 'Probe request',
-    IEEE80211ManagementSubtypes.PROBE_RESP: 'Probe response',
-    IEEE80211ManagementSubtypes.BEACON: 'Beacon',
-    IEEE80211ManagementSubtypes.ATIM: '',
-    IEEE80211ManagementSubtypes.DISASSOC: '',
-    IEEE80211ManagementSubtypes.AUTH: '',
-    IEEE80211ManagementSubtypes.DEAUTH: '',
-    IEEE80211ManagementSubtypes.ACTION: '',
-    IEEE80211ManagementSubtypes.ACTION_NOACK: '',
-}
-
-
-class IEEE80211ControlSubtypes:
-    # for TYPE_CTL
-    WRAPPER=0x70	#/* 11n */
-    BAR=0x80
-    BA=0x90
-    PS_POLL=0xa0
-    RTS=0xb0
-    CTS=0xc0
-    ACK=0xd0
-    CF_END=0xe0
-    CF_END_ACK=0xf0
-
-ieee80211_control_subtype_to_str = {
-    IEEE80211ControlSubtypes.WRAPPER: '',
-    IEEE80211ControlSubtypes.BAR: '',
-    IEEE80211ControlSubtypes.BA: '',
-    IEEE80211ControlSubtypes.PS_POLL: '',
-    IEEE80211ControlSubtypes.RTS: '',
-    IEEE80211ControlSubtypes.CTS: '',
-    IEEE80211ControlSubtypes.ACK: '',
-    IEEE80211ControlSubtypes.CF_END: '',
-    IEEE80211ControlSubtypes.CF_END_ACK: '',
-}
-
-
-class IEEE80211DataSubtypes:
-    # for TYPE_DATA (bit combination)
-    DATA=0x00
-    CF_ACK=0x10
-    CF_POLL=0x20
-    CF_ACPL=0x30
-    NODATA=0x40
-    CFACK=0x50
-    CFPOLL=0x60
-    CF_ACK_CF_ACK=0x70
-    QOS=0x80
-
-ieee80211_data_subtype_to_str = {
-    IEEE80211DataSubtypes.DATA: '',
-    IEEE80211DataSubtypes.CF_ACK: '',
-    IEEE80211DataSubtypes.CF_POLL: '',
-    IEEE80211DataSubtypes.CF_ACPL: '',
-    IEEE80211DataSubtypes.NODATA: '',
-    IEEE80211DataSubtypes.CFACK: '',
-    IEEE80211DataSubtypes.CFPOLL: '',
-    IEEE80211DataSubtypes.CF_ACK_CF_ACK: '',
-    IEEE80211DataSubtypes.QOS: '',
-}
-
-
-ieee80211_subtype_to_str = {
-    IEEE80211Types.MANAGEMENT: ieee80211_management_subtype_to_str,
-    IEEE80211Types.CONTROL: ieee80211_control_subtype_to_str,
-    IEEE80211Types.DATA: ieee80211_data_subtype_to_str,
-}
-
-
-class IEEE80211FrameStructure(Structure):
-    """
-        Described in 8.2.3 of 802.11-2012
-    """
-    endianness = LittleEndian
-    attribute_list = (
-        ('i_fc', Array(UInt8, 2)),
-        ('i_dur', Array(UInt8, 2)),
-
-        ('i_addr1', Array(UInt8, 6)),
-        ('i_addr2', Array(UInt8, 6)),
-        ('i_addr3', Array(UInt8, 6)),
-
-        ('i_seq', UInt16),
-    )
-
-    # 80211-2012 8.2.4.1.1
-    FC0_VERSION_MASK = 0x03 << 0
-    FC0_TYPE_MASK = 0x03 << 2
-    FC0_SUBTYPE_MASK = 0x0f << 4
-    FC1_TODS_MASK = 0x01 << 1
-    FC1_FROMDS_MASK = 0x01 << 2
-
-    @classmethod
-    def to_python(cls, data):
-        fc = data.get('i_fc')
-
-        i_version = fc[0] & cls.FC0_VERSION_MASK
-        i_type = fc[0] & cls.FC0_TYPE_MASK
-        i_subtype = fc[0] & cls.FC0_SUBTYPE_MASK
-        i_tods = fc[1] & cls.FC1_TODS_MASK
-        i_fromds = fc[1] & cls.FC1_FROMDS_MASK
-
-        return {
-            'version': i_version,
-            'type': i_type,
-            'subtype': i_subtype,
-            'tods': i_tods,
-            'fromds': i_fromds,
-            'addr1': data.get('i_addr1'),
-            'addr2': data.get('i_addr2'),
-            'addr3': data.get('i_addr3'),
-            'seq': data.get('i_seq'),
-        }
+from .ieee80211_structures import (
+    IEEE80211MinimalFrameStructure, IEEE80211FrameStructure
+)
 
 
 class IEEE80211Frame(PacketContainer):
     name='ieee80211_frame'
-
-    @staticmethod
-    def print_macaddr(addr):
-        print "{0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}".format(
-            addr[0],
-            addr[1],
-            addr[2],
-            addr[3],
-            addr[4],
-            addr[5],
-        )
 
     @classmethod
     def process_element(cls, buf):
@@ -265,11 +115,36 @@ class IEEE80211Frame(PacketContainer):
 
         return data, i
 
+
+class IEEE80211ManagementFrame(IEEE80211Frame):
+    pass
+
+
+class IEEE80211DataFrame(IEEE80211Frame):
+    pass
+
+
+class IEEE80211ControlFrame(IEEE80211Frame):
+    pass
+
+
+class IEEE80211NotSupported(IEEE80211Frame):
+    @classmethod
+    def parse(cls, buf, extra=None):
+        frame_struct = IEEE80211MinimalFrameStructure.unpack(buf)
+
+        frame = cls(frame_struct.data)
+
+        return frame
+
+
+class IEEE80211BeaconFrame(IEEE80211ManagementFrame):
+    """
+    IEEE802.11-2012 8.3.3.2
+    """
+
     @classmethod
     def process_beacon_frame(cls, buf):
-        """
-        IEEE802.11-2012 8.3.3.2
-        """
 
         i = 0
         data = {}
@@ -294,6 +169,26 @@ class IEEE80211Frame(PacketContainer):
         return data
 
     @classmethod
+    def parse(cls, buf, extra=None):
+        frame_struct = IEEE80211FrameStructure.unpack(buf)
+
+        frame_body = buf[frame_struct.struct.size:]
+
+        data = {}
+        data.update(frame_struct.data)
+
+        data.update(
+            cls.process_beacon_frame(frame_body)
+        )
+
+        frame = cls(data)
+
+        return frame
+
+
+class IEEE80211ProbeReq(IEEE80211ManagementFrame):
+
+    @classmethod
     def process_probe_req(cls, buf):
         i = 0
         data = {}
@@ -314,25 +209,43 @@ class IEEE80211Frame(PacketContainer):
         data = {}
         data.update(frame_struct.data)
 
-        if frame_struct.type == IEEE80211Types.MANAGEMENT:
-            if frame_struct.subtype == IEEE80211ManagementSubtypes.BEACON:
-                data.update(
-                    cls.process_beacon_frame(frame_body)
-                )
-            elif frame_struct.subtype == IEEE80211ManagementSubtypes.PROBE_REQ:
-                data.update(
-                    cls.process_probe_req(frame_body)
-                )
-            else:
-                data.update({
-                    'subtype_not_supported': True,
-                })
-        else:
-            data.update({
-                'type_not_supported': True,
-                'subtype_not_supported': True,
-            })
+        data.update(
+            cls.process_probe_req(frame_body)
+        )
 
         frame = cls(data)
 
         return frame
+
+def to_key(t, s):
+    if t == "MANAGEMENT":
+        return (getattr(IEEE80211Types, t), getattr(IEEE80211ManagementSubtypes, s))
+    elif t == "CONTROL":
+        return (getattr(IEEE80211Types, t), getattr(IEEE80211ControlSubtypes, s))
+    elif t == "DATA":
+        return (getattr(IEEE80211Types, t), getattr(IEEE80211DataSubtypes, s))
+
+    raise AssertionError("Type not supported")
+
+
+ieee80211_mapping = {
+    to_key('MANAGEMENT', 'BEACON'): IEEE80211BeaconFrame,
+    to_key('MANAGEMENT', 'PROBE_REQ'): IEEE80211ProbeReq,
+}
+
+
+def parse_ieee80211_frame(buf, extra=None):
+    """
+    Based on the type and subtype in the given buffer create the appropriate
+    IEEE80211 class instance.
+    """
+
+    frame_struct = IEEE80211MinimalFrameStructure.unpack(buf)
+
+    frame_type = frame_struct.data.get('type')
+    frame_subtype = frame_struct.data.get('subtype')
+
+    cls = ieee80211_mapping.get((frame_type, frame_subtype)) or IEEE80211NotSupported
+
+    return cls.parse(buf, extra)
+

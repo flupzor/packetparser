@@ -19,7 +19,11 @@
 import sys
 
 from packetparser.pcap import PcapFile
-from packetparser.ieee80211 import ieee80211_type_to_str, ieee80211_subtype_to_str
+from packetparser.ieee80211 import (
+    ieee80211_type_to_str, ieee80211_subtype_to_str, IEEE80211NotSupported,
+    IEEE80211BeaconFrame
+)
+from packetparser.utils import macaddr_to_str
 
 def print_radiotap_info(radiotap_frame):
     radiotap_options = "frequency: {0}".format(radiotap_frame.frequency)
@@ -47,8 +51,31 @@ def print_pcap_frame_info(frame_number, pcap_frame):
 
     print(" pcap frame (" + str(frame_number) + "): " + pcap_frame_options)
 
+def print_ieee80211_beacon_frame_info(ieee80211_frame):
+    ieee80211_options = "type: " + ieee80211_type_to_str.get(ieee80211_frame.type)
+    ieee80211_options += " subtype: " + ieee80211_subtype_to_str.get(ieee80211_frame.type).get(ieee80211_frame.subtype)
+
+
+    ieee80211_options += "fromds" if ieee80211_frame.fromds else ""
+    ieee80211_options += ", tods" if ieee80211_frame.tods else ""
+    ieee80211_options += ", seq: {0}".format(ieee80211_frame.seq)
+    ieee80211_options += ", timestamp: {0}".format(ieee80211_frame.timestamp)
+    ieee80211_options += ", beacon interval: {0}".format(ieee80211_frame.beacon_interval)
+
+    print "   ieee80211 frame " + ieee80211_options
+
+def print_ieee80211_unknown_frame_info(ieee80211_frame):
+    ieee80211_options = "type: " + ieee80211_type_to_str.get(ieee80211_frame.type)
+    ieee80211_options += " subtype: " + ieee80211_subtype_to_str.get(ieee80211_frame.type).get(ieee80211_frame.subtype)
+
+    print "   ieee80211 frame " + ieee80211_options
+
 def print_ieee80211_frame_info(ieee80211_frame):
-    print "   ieee80211 frame type: " + ieee80211_type_to_str.get(ieee80211_frame.type) + " subtype: " + ieee80211_subtype_to_str.get(ieee80211_frame.type).get(ieee80211_frame.subtype)
+
+    if type(ieee80211_frame) is IEEE80211NotSupported:
+        print_ieee80211_unknown_frame_info(ieee80211_frame)
+    elif type(ieee80211_frame) is IEEE80211BeaconFrame:
+        print_ieee80211_beacon_frame_info(ieee80211_frame)
 
 def print_pcap_file_info(pcap_file):
 
