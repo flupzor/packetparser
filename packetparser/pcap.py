@@ -239,8 +239,9 @@ class PcapFile(PacketContainer):
     time
     """
 
-    def __init__(self, data, file_handle):
+    def __init__(self, data, file_handle, seekable=True):
         self.file_handle = file_handle
+        self.seekable = seekable
 
         new = {}
         new.update(PcapHeaderStructure.defaults())
@@ -289,8 +290,9 @@ class PcapFile(PacketContainer):
         pass
 
     @classmethod
-    def parse_header(cls, file_handle):
-        file_handle.seek(0)
+    def parse_header(cls, file_handle, seekable=True):
+        if seekable:
+            file_handle.seek(0)
 
         header_frame_array = array.array('B')
         header_frame_array.fromfile(
@@ -301,11 +303,13 @@ class PcapFile(PacketContainer):
         pcap_header_struct = PcapHeaderStructure.unpack(header_frame_array)
         data = pcap_header_struct.data
 
-        return cls(data, file_handle)
+        return cls(data, file_handle, seekable=seekable)
 
     def frames(self):
         # Start parsing right after the PCAP header.
-        self.file_handle.seek(PcapHeaderStructure.struct.size)
+
+        if self.seekable:
+            self.file_handle.seek(PcapHeaderStructure.struct.size)
 
         # TODO: For now we support 127, 80211 RadioTap only.
         extra = {

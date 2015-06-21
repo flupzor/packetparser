@@ -102,7 +102,13 @@ if __name__ == '__main__':
         sys.exit(1)  # EXIT_FAILURE
 
     for filename in sys.argv[1:]:
-        file_handle = open(filename, 'rb')
-        pcap_file = PcapFile.parse_header(file_handle)
+        if filename == '-':
+            file_handle = sys.stdin
+            seekable = False
+        else:
+            file_handle = open(filename, 'rb')
+            seekable = True
+
+        pcap_file = PcapFile.parse_header(file_handle, seekable=seekable)
 
         print_pcap_file_info(pcap_file)
